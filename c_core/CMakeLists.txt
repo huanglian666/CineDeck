@@ -14,8 +14,14 @@ target_include_directories(ed2k_calc
 )
 
 # 兼容 vcpkg 依赖：优先通过 CMAKE_TOOLCHAIN_FILE / CMAKE_PREFIX_PATH 定位 rhash，
-# 本地未传 toolchain 时回退到仓库根目录 vcpkg_installed/arm64-osx
-set(_DEFAULT_VCPKG_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg_installed/arm64-osx")
+# 并回退到仓库根目录 vcpkg_installed/<triplet>
+# （传 toolchain 时跟随实际 triplet；本地未传 toolchain 时为 arm64-osx）
+set(_VCPKG_FALLBACK_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg_installed")
+if(VCPKG_TARGET_TRIPLET)
+    set(_DEFAULT_VCPKG_PREFIX "${_VCPKG_FALLBACK_ROOT}/${VCPKG_TARGET_TRIPLET}")
+else()
+    set(_DEFAULT_VCPKG_PREFIX "${_VCPKG_FALLBACK_ROOT}/arm64-osx")
+endif()
 
 # rhash 头文件目录（供 #include <rhash.h> 使用）
 find_path(RHASH_INCLUDE_DIR

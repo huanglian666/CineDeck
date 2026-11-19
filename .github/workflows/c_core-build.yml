@@ -67,6 +67,8 @@ jobs:
       - name: 安装 rhash（vcpkg manifest 模式）
         shell: bash
         run: |
+          # vcpkg 要求二进制缓存目录必须已存在
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             VCPKG_EXE="$VCPKG_ROOT/vcpkg.exe"
           else

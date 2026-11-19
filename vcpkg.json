@@ -1,0 +1,7 @@
+{
+  "name": "cinedeck",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "rhash"
+  ]
+}

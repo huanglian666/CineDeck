@@ -1,0 +1,21 @@
+# vcpkg 项目级依赖目录
+vcpkg_installed/
+
+# C / CMake 构建产物
+c_core/build/
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+
+# Rust 构建产物
+cinedeck_app/target/
+target/
+
+# macOS / Windows 系统与编辑器杂项
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json

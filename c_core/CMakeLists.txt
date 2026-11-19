@@ -13,17 +13,25 @@ target_include_directories(ed2k_calc
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# 兼容 vcpkg 依赖（如 arm64-osx 或通过 CMAKE_TOOLCHAIN_FILE 传入）
+# 兼容 vcpkg 依赖：优先通过 CMAKE_TOOLCHAIN_FILE / CMAKE_PREFIX_PATH 定位 rhash，
+# 本地未传 toolchain 时回退到仓库根目录 vcpkg_installed/arm64-osx
 set(_DEFAULT_VCPKG_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../vcpkg_installed/arm64-osx")
-if(EXISTS "${_DEFAULT_VCPKG_PREFIX}/include")
-    target_include_directories(ed2k_calc PRIVATE "${_DEFAULT_VCPKG_PREFIX}/include")
-endif()
 
+# rhash 头文件目录（供 #include <rhash.h> 使用）
+find_path(RHASH_INCLUDE_DIR
+    NAMES rhash.h
+    HINTS "${_DEFAULT_VCPKG_PREFIX}/include"
+)
+
+# rhash 静态库
 find_library(RHASH_LIBRARY
     NAMES rhash
     HINTS "${_DEFAULT_VCPKG_PREFIX}/lib" "${CMAKE_PREFIX_PATH}/lib"
 )
 
+if(RHASH_INCLUDE_DIR)
+    target_include_directories(ed2k_calc PRIVATE "${RHASH_INCLUDE_DIR}")
+endif()
 if(RHASH_LIBRARY)
     target_link_libraries(ed2k_calc PRIVATE "${RHASH_LIBRARY}")
 endif()

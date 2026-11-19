@@ -1,0 +1,124 @@
+name: c_core 构建静态库
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'c_core/**'
+      - 'vcpkg.json'
+      - '.github/workflows/c_core-build.yml'
+  pull_request:
+    paths:
+      - 'c_core/**'
+      - 'vcpkg.json'
+      - '.github/workflows/c_core-build.yml'
+  # 支持在 GitHub Actions 页面手动触发
+  workflow_dispatch:
+
+env:
+  # vcpkg 工具链克隆目录（每次任务重新克隆，depth 1 较快）
+  VCPKG_ROOT: ${{ github.workspace }}/.vcpkg
+  # vcpkg 二进制缓存目录：跨任务缓存已编译的 rhash 包，避免重复编译
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-archives
+
+jobs:
+  build:
+    name: 静态库 ${{ matrix.triplet }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Apple Silicon（与本地开发环境一致的 arm64-osx triplet）
+          - os: macos-latest
+            triplet: arm64-osx
+          # x64 Windows，static triplet 输出静态 .lib（静态 CRT /MT）
+          - os: windows-latest
+            triplet: x64-windows-static
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 缓存 vcpkg 编译产物
+        uses: actions/cache@v4
+        with:
+          path: |
+            .vcpkg-archives
+            vcpkg_installed
+          key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ matrix.triplet }}-
+
+      - name: 克隆 vcpkg 工具链
+        shell: bash
+        run: git clone --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+
+      - name: 初始化 vcpkg（Windows）
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: call "%VCPKG_ROOT%\bootstrap-vcpkg.bat"
+
+      - name: 初始化 vcpkg（macOS）
+        if: runner.os != 'Windows'
+        shell: bash
+        run: "$VCPKG_ROOT/bootstrap-vcpkg.sh"
+
+      - name: 安装 rhash（vcpkg manifest 模式）
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            VCPKG_EXE="$VCPKG_ROOT/vcpkg.exe"
+          else
+            VCPKG_EXE="$VCPKG_ROOT/vcpkg"
+          fi
+          "$VCPKG_EXE" install --triplet ${{ matrix.triplet }}
+
+      - name: 配置 CMake
+        shell: bash
+        run: |
+          cmake -S c_core -B c_core/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -DCINEDECK_BUILD_TESTS=ON
+
+      - name: 编译静态库与测试程序
+        shell: bash
+        run: cmake --build c_core/build --config Release
+
+      - name: 运行单元测试
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            TEST_BIN="c_core/build/Release/test_ed2k.exe"
+          else
+            TEST_BIN="c_core/build/test_ed2k"
+          fi
+          "$TEST_BIN"
+
+      - name: 打包静态库与头文件
+        shell: bash
+        run: |
+          PKG_DIR="c_core-${{ matrix.triplet }}"
+          mkdir -p "$PKG_DIR/include" "$PKG_DIR/lib"
+          # 项目头文件 + rhash 头文件（上层 Rust FFI 链接时同样需要）
+          cp -R c_core/include/. "$PKG_DIR/include/"
+          cp -R "vcpkg_installed/${{ matrix.triplet }}/include/." "$PKG_DIR/include/"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp c_core/build/Release/ed2k_calc.lib "$PKG_DIR/lib/"
+            cp "vcpkg_installed/${{ matrix.triplet }}/lib/rhash.lib" "$PKG_DIR/lib/"
+          else
+            cp c_core/build/libed2k_calc.a "$PKG_DIR/lib/"
+            cp "vcpkg_installed/${{ matrix.triplet }}/lib/librhash.a" "$PKG_DIR/lib/"
+          fi
+          echo "--- $PKG_DIR 产物清单 ---"
+          find "$PKG_DIR" -type f
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: c_core-${{ matrix.triplet }}
+          path: c_core-${{ matrix.triplet }}/
+          if-no-files-found: error
+          retention-days: 30

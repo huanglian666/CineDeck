@@ -1,32 +1,18 @@
 # CineDeck
 
-跨平台桌面端媒体库管理应用。Rust 侧基于 GPUI 框架构建界面与业务逻辑，底层计算由 C 模块（`c_core/`）以静态库形式提供，通过 FFI 链接。
+跨平台桌面媒体库管理应用。桌面界面计划使用 GPUI Kit，Rust 负责媒体库业务和文件读取，通过 FFI 调用 C 静态库计算 ED2K 摘要。
 
-> **当前状态**：项目处于早期开发阶段，C 计算模块已完成，Rust 侧 FFI 接入尚未开始。Rust / GPUI 相关功能均未实现，本文只描述已落地的部分。
+> **开发进度**　`c_core` 已实现 ED2K 计算所需的分块摘要与聚合接口。下图展示目标架构，Rust FFI、桌面功能和公开检索服务处于规划阶段。
 
 ## 整体架构
 
-```
-┌─────────────────────────────────────────────┐
-│  Rust 侧（规划中，尚未实现）                  │
-│  GPUI 桌面界面 · 媒体库业务逻辑              │
-│  文件读取 · 流式切块状态机 · FFI 调用封装     │
-└──────────────────┬──────────────────────────┘
-                   │ FFI（静态链接）
-┌──────────────────▼──────────────────────────┐
-│  c_core/（已完成）                           │
-│  无状态底层计算封装，CMake 构建为静态库       │
-│  ├─ cinedeck_md4_digest                     │
-│  └─ cinedeck_ed2k_hash_from_chunk_digests   │
-└──────────────────┬──────────────────────────┘
-                   │
-            rhash（vcpkg 管理）
-```
+![CineDeck 目标架构：frontend 调用 backend，backend 调用 data、tmdb、c_core 及媒体工具](docs/architecture/images/cinedeck-overview.svg)
 
-分工思路：
+交互版可下载后在浏览器中打开，查看模块说明并缩放连线。[交互架构图（HTML）](.archify/architecture-cinedeck-overview-20261120-135827/cinedeck-overview.html) · [可编辑图稿（JSON）](.archify/architecture-cinedeck-overview-20261120-135827/candidate.json)
 
-- **C 计算模块（`c_core/`）**：聚焦无状态的底层计算与算法封装，不持有文件句柄、不做 I/O。
-- **Rust 侧**：负责文件读取、流式切块、上层业务与界面逻辑，把每一块的摘要结果交给 C 模块聚合。
+`frontend` 展示媒体库并提交操作。`backend` 通过 `data` 在 SQLite 中按库内相对路径查询扫描记录，通过 `tmdb` 匹配作品、单集与海报。计算 ED2K 时，Rust 持有文件和缓冲区，分块读取后交给 `c_core` 计算摘要。
+
+MediaInfoLib 提供音视频轨道信息和完整 TXT 报告。缺少海报时，FFmpeg 截取视频原帧作备用封面。发现匹配字幕时，FFmpeg 加载第一份字幕，在字幕显示时截取预览帧。已有海报的影片也可以查看字幕效果。
 
 ## c_core 计算接口
 

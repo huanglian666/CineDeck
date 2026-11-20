@@ -1,0 +1,416 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CineDeck 媒体库目标架构",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-cinedeck-overview-20261120-135827/cinedeck-overview.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:huanglian666/CineDeck.git",
+      "revision": "f7963e6c2f8aef6ac11821d5f9e1b8f3f1e669f6",
+      "link_mode": "local-only"
+    },
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": {
+          "label": "桌面界面"
+        },
+        "backend": {
+          "label": "Rust 业务与适配"
+        },
+        "database": {
+          "label": "数据访问与存储"
+        },
+        "cloud": {
+          "label": "在线服务"
+        },
+        "security": {
+          "label": "进程内原生库"
+        },
+        "messagebus": {
+          "label": "外部媒体进程"
+        },
+        "external": {
+          "label": "媒体文件与图像"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "desktop",
+      "type": "frontend",
+      "label": "frontend",
+      "sublabel": "GPUI Kit · 桌面媒体库",
+      "pos": [
+        205,
+        178
+      ],
+      "size": [
+        218,
+        76
+      ],
+      "sources": [
+        {
+          "path": "README.md",
+          "line": 116,
+          "end_line": 120,
+          "label": "桌面界面规划"
+        }
+      ]
+    },
+    {
+      "id": "index",
+      "type": "database",
+      "label": "data",
+      "sublabel": "Rust · 相对路径查重与入库",
+      "pos": [
+        483,
+        45
+      ],
+      "size": [
+        194,
+        74
+      ],
+      "icon": "backend"
+    },
+    {
+      "id": "sqlite",
+      "type": "database",
+      "label": "SQLite",
+      "sublabel": "本地媒体索引",
+      "pos": [
+        241,
+        45
+      ],
+      "size": [
+        138,
+        74
+      ]
+    },
+    {
+      "id": "metadata",
+      "type": "backend",
+      "label": "tmdb",
+      "sublabel": "Rust · 作品、单集与海报",
+      "pos": [
+        730,
+        178
+      ],
+      "size": [
+        190,
+        74
+      ]
+    },
+    {
+      "id": "catalog",
+      "type": "cloud",
+      "label": "TMDB API",
+      "sublabel": "在线影视资料",
+      "pos": [
+        991,
+        178
+      ],
+      "size": [
+        142,
+        74
+      ]
+    },
+    {
+      "id": "scanroot",
+      "type": "external",
+      "label": "用户媒体目录",
+      "sublabel": "配置的根目录 · 视频与字幕",
+      "pos": [
+        36,
+        337
+      ],
+      "size": [
+        212,
+        76
+      ]
+    },
+    {
+      "id": "coordinator",
+      "type": "backend",
+      "label": "backend",
+      "sublabel": "Rust · 扫描、匹配与任务调度",
+      "pos": [
+        459,
+        315
+      ],
+      "size": [
+        242,
+        112
+      ],
+      "sources": [
+        {
+          "path": "README.md",
+          "line": 26,
+          "end_line": 29,
+          "label": "Rust 持有文件读取与切块逻辑"
+        }
+      ]
+    },
+    {
+      "id": "publish",
+      "type": "cloud",
+      "label": "公开检索服务",
+      "sublabel": "后续 · 网页检索链接与字幕",
+      "pos": [
+        916,
+        337
+      ],
+      "size": [
+        216,
+        76
+      ]
+    },
+    {
+      "id": "probe",
+      "type": "security",
+      "label": "MediaInfoLib",
+      "sublabel": "动态库 · 媒体轨道与完整 TXT",
+      "pos": [
+        36,
+        548
+      ],
+      "size": [
+        226,
+        78
+      ],
+      "icon": "backend"
+    },
+    {
+      "id": "digest",
+      "type": "security",
+      "label": "c_core",
+      "sublabel": "C 静态库 · 基于 RHash",
+      "pos": [
+        332,
+        548
+      ],
+      "size": [
+        208,
+        78
+      ],
+      "tag": "已实现",
+      "sources": [
+        {
+          "path": "c_core/include/ed2k_calc.h",
+          "line": 23,
+          "end_line": 46,
+          "label": "缓冲区 MD4 与分块摘要聚合"
+        },
+        {
+          "path": "c_core/CMakeLists.txt",
+          "line": 7,
+          "end_line": 9,
+          "label": "构建静态库"
+        },
+        {
+          "path": "c_core/src/ed2k_calc.c",
+          "line": 49,
+          "end_line": 79,
+          "label": "以 RHash 计算 MD4"
+        }
+      ],
+      "icon": "backend"
+    },
+    {
+      "id": "still",
+      "type": "messagebus",
+      "label": "FFmpeg",
+      "sublabel": "CLI · 截取视频与渲染字幕",
+      "pos": [
+        612,
+        548
+      ],
+      "size": [
+        215,
+        78
+      ],
+      "icon": "external"
+    },
+    {
+      "id": "playback",
+      "type": "messagebus",
+      "label": "mpv",
+      "sublabel": "播放器 · 加载同目录字幕",
+      "pos": [
+        900,
+        548
+      ],
+      "size": [
+        223,
+        78
+      ],
+      "icon": "external"
+    },
+    {
+      "id": "cover-frame",
+      "type": "external",
+      "label": "备用封面",
+      "sublabel": "从视频原画面截取一帧",
+      "icon": "none",
+      "pos": [
+        418,
+        767
+      ],
+      "size": [
+        198,
+        74
+      ]
+    },
+    {
+      "id": "subtitle-frame",
+      "type": "external",
+      "label": "字幕效果预览",
+      "sublabel": "视频实帧与选定字幕的合成图",
+      "icon": "none",
+      "pos": [
+        821,
+        767
+      ],
+      "size": [
+        232,
+        74
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "desktop-submit",
+      "from": "desktop",
+      "to": "coordinator",
+      "label": "调用业务接口",
+      "variant": "emphasis"
+    },
+    {
+      "id": "lookup",
+      "from": "coordinator",
+      "to": "index",
+      "label": "查询相对路径",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "store",
+      "from": "index",
+      "to": "sqlite",
+      "label": "读写索引"
+    },
+    {
+      "id": "search",
+      "from": "coordinator",
+      "to": "metadata",
+      "label": "按片名匹配",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "fetch",
+      "from": "metadata",
+      "to": "catalog",
+      "label": "HTTPS"
+    },
+    {
+      "id": "read-files",
+      "from": "coordinator",
+      "to": "scanroot",
+      "label": "遍历与读取"
+    },
+    {
+      "id": "share",
+      "from": "coordinator",
+      "to": "publish",
+      "label": "选择后发布",
+      "variant": "dashed"
+    },
+    {
+      "id": "analyze",
+      "from": "coordinator",
+      "to": "probe",
+      "label": "读取轨道",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "calculate",
+      "from": "coordinator",
+      "to": "digest",
+      "label": "新路径算摘要",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "capture",
+      "from": "coordinator",
+      "to": "still",
+      "label": "按条件截图",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "play",
+      "from": "coordinator",
+      "to": "playback",
+      "label": "点播时启动",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "make-cover",
+      "from": "still",
+      "to": "cover-frame",
+      "label": "缺海报时截帧",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "render-subtitle",
+      "from": "still",
+      "to": "subtitle-frame",
+      "label": "有字幕时渲染",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "一次目录扫描",
+      "items": [
+        "以配置的根目录定位文件，库内只记录相对路径，如 剧集/第一季/E01.mkv。",
+        "backend 通过 data 查索引。相对路径命中即跳过；改名后按新路径扫描、计算并入库。"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "FFmpeg 的两种截图",
+      "items": [
+        "没有海报时，backend 请求一张视频原帧作备用封面。",
+        "发现同目录的匹配字幕时，backend 选第一份，取其首条非空字幕显示区间的中点。FFmpeg 加载该字幕并渲染单帧，frontend 展示实际字形、位置与画面的叠加效果。",
+        "已有 TMDB 海报的影片也可生成字幕预览；同时缺海报且有字幕时，两张图分别保留。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Rust 与 C 如何协作",
+      "items": [
+        "Rust 持有文件与缓冲区，分块读入；c_core 同步计算每块 MD4，再聚合成 ED2K 摘要。",
+        "C 静态库已实现。桌面模块、动态库与 CLI 的接入是本轮目标设计。"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "从本地整理到公开检索",
+      "items": [
+        "按 TMDB 作品或单集聚合版本，结合 MediaInfo 生成规范文件名，并关联同目录字幕。",
+        "后续由客户端发布选定条目，网页提供 ED2K 链接与字幕检索下载。"
+      ]
+    }
+  ]
+}

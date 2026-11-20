@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "cebc7d98-7513-47e5-b1c0-d67e4aba7c8e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/huanglian/Desktop/rust_code/cinedeck/.archify/architecture-cinedeck-overview-20261120-135827/candidate.json",
+  "output": "/Users/huanglian/Desktop/rust_code/cinedeck/.archify/architecture-cinedeck-overview-20261120-135827/cinedeck-overview.html",
+  "specification": {
+    "sha256": "dca528b7c6820aafcba558c7fb7aea02517dbd3c05669141bc2870fa3761a53d",
+    "bytes": 9059
+  },
+  "artifact": {
+    "sha256": "2796a31b5ee5532fd8f3fa6437f2a54e250c168b4c0886e95dc2c81c99676eb1",
+    "bytes": 774458
+  }
+}
